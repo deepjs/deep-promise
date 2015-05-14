@@ -2,7 +2,7 @@ var gulp = require('gulp');
 
 //___________________________________________________
 
-gulp.task('default', ['lint']);
+gulp.task('default', ['lint', 'uglify']);
 gulp.task('lint', ['jslint']);
 
 //___________________________________________________
