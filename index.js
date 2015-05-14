@@ -53,12 +53,12 @@ Promise.logger = logger;
 		promise.when = function(arg) {
 			//console.log("deep.when : ", arg)
 			if (!arg || (!arg.promise && !arg.then))
-				return new Promise().resolve(arg);
+				return new promise.Promise().resolve(arg);
 			if (arg._deep_deferred_)
 				return arg.promise();
 			if (typeof arg.then === 'function') // any promise/thenable compliant object
 			{
-				var p = new Promise(); // return new promise to avoid initial promise state to change
+				var p = new promise.Promise(); // return new promise to avoid initial promise state to change
 				arg.then(function(s) {
 					p.resolve(s);
 				}, function(e) {
@@ -70,10 +70,10 @@ Promise.logger = logger;
 				return arg.promise();
 			if (typeof arg.promise === 'object') // bluebird deferred case
 				return arg.promise;
-			return new Promise().resolve(arg);
+			return new promise.Promise().resolve(arg);
 		};
 		promise.immediate = function(result) {
-			return new Promise().resolve(result);
+			return new promise.Promise().resolve(result);
 		};
 
 		/**
@@ -92,7 +92,7 @@ Promise.logger = logger;
 			if (arr.length === 0)
 				return promise.immediate([]);
 
-			var prom = new Promise(),
+			var prom = new promise.Promise(),
 				count = arr.length,
 				c = 0,
 				d = -1,
@@ -296,7 +296,7 @@ Promise.logger = logger;
 			 * @return {deep.Promise}
 			 */
 			promise: function() {
-				var prom = new Promise();
+				var prom = new promise.Promise();
 				//console.log("deep2.Deffered.promise : ", prom, " r,r,c : ", this.rejected, this.resolved, this.canceled)
 				if (this.resolved)
 					return prom.resolve(this._success);
@@ -362,8 +362,8 @@ Promise.logger = logger;
 						nextTry(self);
 					} catch (e) {
 						if (self._context.debug)
-							if (Promise.dumpError)
-								Promise.dumpError(e);
+							if (promise.Promise.dumpError)
+								promise.Promise.dumpError(e);
 							else
 								console.error(e);
 						self._state.success = null;
@@ -512,9 +512,10 @@ Promise.logger = logger;
 				return this;
 			},
 			/**
-			 * will wait xxxx ms before contiuing chain
+			 * will wait xxxx ms before continuing chain
+			 *(always familly)
 			 *
-			 * transparent true
+			 * transparent (do not modify promise success/error)
 			 *
 			 *
 			 * @chainable
@@ -523,10 +524,10 @@ Promise.logger = logger;
 			 * @return {deep.NodesChain} this
 			 */
 			delay: function(ms) {
-				return this.done(function() {
+				return this.always(function() {
 					var time;
 					// console.log("deep.delay : ", ms);
-					var p = new Promise();
+					var p = new promise.Promise();
 					setTimeout(function() {
 						p.resolve(undefined);
 					}, ms);
@@ -588,18 +589,18 @@ Promise.logger = logger;
 					// console.log('.when ', prom);
 					return prom;
 				});
-			},
+			}/*,
 			loop: function(cb, interval, maxIteration, input) {
 				return this.done(function(s) {
 					return promise.loop(cb, interval, maxIteration, input ||  s);
 				});
-			}
+			}*/
 		};
 
 		promise.promisify = function(fn, parent) {
 			return function() {
 				var args = Array.prototype.slice.call(arguments),
-					promise = new Promise();
+					promise = new promise.Promise();
 				args.push(function() {
 					var callbackArgs = Array.prototype.slice.call(arguments);
 					var error = callbackArgs.shift();
@@ -608,13 +609,13 @@ Promise.logger = logger;
 					else
 						promise.resolve((callbackArgs.length <= 1) ? callbackArgs[1] : callbackArgs);
 				});
-				fn.apply(parent || {}, args)
+				fn.apply(parent || {}, args);
 				return promise;
 			};
 		};
 
 		promise.async = function(parent, cmd, args) {
-			var promise = new Promise();
+			var promise = new promise.Promise();
 			var callback = function() {
 				var argus = Array.prototype.slice.apply(arguments);
 				var err = argus.shift();
@@ -680,7 +681,7 @@ Promise.logger = logger;
 		};
 		// _____________________________________________ LOGGER 
 		Promise.getLogger = function() {
-			return (Promise.context && Promise.context.logger) || Promise.logger || console;
+			return (promise.Promise.context && promise.Promise.context.logger) || promise.Promise.logger || console;
 		};
 		//_______________________________________________ logs
 		/**
@@ -709,7 +710,7 @@ Promise.logger = logger;
 		Promise.prototype.elog = function() {
 			var args = Array.prototype.slice.call(arguments);
 			return this.fail(function(e) {
-				var logger = Promise.getLogger();
+				var logger = promise.Promise.getLogger();
 				args.push(e);
 				logger.error.apply(logger, args);
 			});
@@ -725,7 +726,7 @@ Promise.logger = logger;
 		Promise.prototype.slog = function() {
 			var args = Array.prototype.slice.call(arguments);
 			return this.done(function(s) {
-				var logger = Promise.getLogger();
+				var logger = promise.Promise.getLogger();
 				args.push(s);
 				logger.log.apply(logger, args);
 			});
@@ -746,19 +747,19 @@ Promise.logger = logger;
 			return output;
 		}
 
-		Promise.contextualise = function(p) {
+		promise.contextualisePromise = function(p) {
 			// shallow copy all context
-			p._context = Promise.context = Promise.context ? shallowCopy(Promise.context) : {};
+			p._context = promise.Promise.context = promise.Promise.context ? shallowCopy(promise.Promise.context) : {};
 			p._contextualised = true;
-			return Promise.context;
+			return promise.Promise.context;
 		};
 
-		promise.contextualise = function(arg) {
-			return new Promise().resolve(undefined).contextualise(arg);
+		/*promise.contextualise = function(arg) {
+			return new promise.Promise().resolve(undefined).contextualise(arg);
 		};
 		promise.delay = function(ms) {
-			return new Promise().resolve(undefined).delay(ms);
-		};
+			return new promise.Promise().resolve(undefined).delay(ms);
+		};*/
 		/**
 		 * set key/value in current Promise.context
 		 *
@@ -793,7 +794,7 @@ Promise.logger = logger;
 		Promise.prototype.contextualise = function(arg) {
 			var self = this;
 			return this.done(function(s) {
-				self._context = Promise.contextualise(self);
+				self._context = promise.contextualisePromise(self);
 				self._contextualised = true;
 				if (arg)
 					for (var i in arg)
@@ -831,9 +832,9 @@ Promise.logger = logger;
 			var self = this;
 			return this.always(function() {
 				if (key)
-					Promise.getLogger().log("promise.context." + key + " : ", self._context[key]);
+					promise.Promise.getLogger().log("promise.context." + key + " : ", self._context[key]);
 				else
-					Promise.getLogger().log("promise.context : ", self._context);
+					promise.Promise.getLogger().log("promise.context : ", self._context);
 			});
 		};
 
@@ -844,9 +845,9 @@ Promise.logger = logger;
 		Promise.prototype.debug = function() {
 			var args = Array.prototype.slice.call(arguments);
 			return this.always(function(s, e) {
-				if (!Promise.context.debug)
-					return
-				var logger = Promise.getLogger();
+				if (!promise.Promise.context.debug)
+					return;
+				var logger = promise.Promise.getLogger();
 				args.push(e || s);
 				if (logger.debug)
 					logger.debug.apply(logger, args);
