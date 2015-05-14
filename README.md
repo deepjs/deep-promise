@@ -1,6 +1,42 @@
 # deep-promise
 
-Yet another small but powerfull promise lib including context management.
+Yet another small, simple but powerfull promise lib __including concurrent context management__.
+
+It has been written when really few js promise libraries was there, and has been heavily used and binded in deepjs core.
+
+It is now extracted from deepjs and avaiable as stand-alone library.
+
+Historicaly, it provides concept that __is not__ in Promise A+ standard, and for few divergent points it could be one day rewritten to include Promise A+ standards.
+
+The main difference, is that deep-promise include __concurrent context management pattern__ that comes from `future` (the very first name of promise in the 80's) and that is one of the powerful gem hidden in Promise patterns that you should absolutly know.
+
+## API
+
+### Base
+
+#### .when
+
+#### .then
+
+#### .done 
+
+#### .fail/.catch 
+
+#### new Promise
+
+### Concurrent context
+
+### Logger
+
+### State
+
+### Custom API
+
+### Identities
+
+### Deferred
+
+### Promisify
 
 ## Tests
 
