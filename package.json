@@ -1,6 +1,6 @@
 {
   "name": "deep-promise",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Yet another small but powerfull promise lib including context management.",
   "main": "index.js",
   "directories": {
